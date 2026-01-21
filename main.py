@@ -1,4 +1,4 @@
-from typing import Annotated
+from typing import Annotated, Final
 
 import httpx
 from rich.console import Console
@@ -10,18 +10,19 @@ app = Typer()
 console = Console()
 err_console = Console(stderr=True)
 
+TIMEOUT: Final[int] = 10
+
 
 @app.command(help="Check the status of websites.")
 def website_status(
     url: Annotated[
         str, Argument(help="The url of which you want to check the status of")
     ] = "https://indently.io/",
-    timeout: Annotated[int, Argument()] = 10,
 ) -> None:
     url = normalize_url(url)
 
     try:
-        stats = check_website(url, timeout)
+        stats = check_website(url, TIMEOUT)
 
         display_website_stats(url, stats, console)
     except httpx.HTTPError as exc:
