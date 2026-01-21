@@ -20,4 +20,4 @@ uv run main.py https://github.com/marekzelinka/website-checker
 
 - **Python** - duh
 - **Typer** - cli ui
-- **httpx** - http client for Python3
+- **httpx** - http client with async support
