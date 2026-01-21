@@ -12,6 +12,7 @@ def normalize_url(url: str) -> str:
 
 @dataclass
 class WebsiteStats:
+    url: str
     status_code: int
     status_phrase: str
     content_type: str
@@ -20,10 +21,13 @@ class WebsiteStats:
     response_time: float
 
 
-def check_website(url: str, timeout: float) -> WebsiteStats:
+async def get_website_status(url: str) -> WebsiteStats:
     """Retuns response stats for provided url."""
-    response = httpx.get(url, follow_redirects=True, timeout=timeout)
-    response.raise_for_status()
+    url = normalize_url(url)
+
+    async with httpx.AsyncClient() as client:
+        response = await client.get(url, follow_redirects=True)
+        response.raise_for_status()
 
     status_code = response.status_code
     status_phrase = response.reason_phrase
@@ -33,6 +37,7 @@ def check_website(url: str, timeout: float) -> WebsiteStats:
     response_time = response.elapsed.total_seconds()
 
     return WebsiteStats(
+        url=url,
         status_code=status_code,
         status_phrase=status_phrase,
         content_type=content_type,
@@ -42,11 +47,11 @@ def check_website(url: str, timeout: float) -> WebsiteStats:
     )
 
 
-def display_website_stats(url: str, stats: WebsiteStats, console: Console) -> None:
+def display_website_stats(stats: WebsiteStats, console: Console) -> None:
     """Prints website stats in a formatted table."""
     table = Table("Param", "Value", show_lines=True)
 
-    table.add_row("URL", url)
+    table.add_row("URL", stats.url)
     table.add_row("Status Code", f"{stats.status_code} ({stats.status_phrase})")
     table.add_row("Content Type", stats.content_type)
     table.add_row("Encoding", stats.encoding)
